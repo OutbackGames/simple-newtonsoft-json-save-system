@@ -16,8 +16,7 @@ using Newtonsoft.Json;
 
 public static class ObjectSerialiser
 {
-    //windows only. this will need configuring if you want to use for any other os. Environment.UserName returns "SYSTEM" on windows in some cases.
-    //this way I know it will work.
+    //Environment.UserName returns "SYSTEM" on windows in some cases. be aware.
     private static string _filePath = $@"C:\Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat";
     private static string _filePathBackup = $@"C:\Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat.bak";
     private static Dictionary<string, object> _itemsToSave = new Dictionary<string, object>();
