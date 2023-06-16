@@ -1,16 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
-[System.Serializable]
-public struct SimpleData
+[System.Serializable, JsonObject(MemberSerialization.OptIn)]
+public class SimpleData
 {
-    [SerializeField] private int age;
-    [SerializeField] private string name;
-    [SerializeField] private string birthdate;
+    [SerializeField, JsonProperty] public int age;
+    [SerializeField, JsonProperty] public string name;
+    [SerializeField, JsonProperty] public string birthdate;
     
     public SimpleData(int Age, string Name, string Birthdate)
     {
@@ -19,21 +19,6 @@ public struct SimpleData
         birthdate = Birthdate;
     }
 
-    public int GetAge()
-    {
-        return age;
-    }
-
-    public string GetName()
-    {
-        return name;
-    }
-
-    public string GetBirthdate()
-    {
-        return birthdate;
-    }
-    
 }
 
 public class SerialisationManager : MonoBehaviour
@@ -63,15 +48,14 @@ public class SerialisationManager : MonoBehaviour
 
         _level = ObjectSerialiser.Load(levelKey, _level);
         _weight = ObjectSerialiser.Load(weightKey, _weight);
-        
-        //_simpleData = Convert.ChangeType(ObjectSerialiser.Load(simpleDataKey, _simpleData), );
+        _simpleData = ObjectSerialiser.Load<SimpleData>(simpleDataKey, _simpleData);
     }
 
     void SaveData()
     {
         ObjectSerialiser.Save<int>(levelKey, _level);
         ObjectSerialiser.Save<float>(weightKey,_weight);
-        //ObjectSerialiser.Save(simpleDataKey,_simpleData);
+        ObjectSerialiser.Save<SimpleData>(simpleDataKey,_simpleData);
     }
 
     private void OnDisable()
