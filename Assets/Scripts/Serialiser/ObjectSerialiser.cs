@@ -14,7 +14,6 @@ using UnityEngine;
 using Newtonsoft.Json;
 
 
-
 public static class ObjectSerialiser
 {
     //Environment.UserName returns "SYSTEM" on windows in some cases. be aware.
@@ -59,7 +58,20 @@ public static class ObjectSerialiser
         _itemsToSave.TryGetValue(Key, out returnedTuple);
         if (returnedTuple != null)
         {
-            return (T) Convert.ChangeType(returnedTuple.Item2, returnedTuple.Item1, CultureInfo.InvariantCulture);
+            try
+            {
+                T convertedValue = (T)Convert.ChangeType(returnedTuple.Item2, returnedTuple.Item1,
+                    CultureInfo.InvariantCulture);
+                return convertedValue;
+            }
+            catch (Exception e)
+            {
+                Debug.Log($"{e}, - Now Returning The Default Value.");
+                //We're getting an invalid cast exception. Json.Net must be doing something to class objects when serialising.
+                //Todo - figure out how to handle more complex types that don't have IConvertible as it is inconvenient 
+                return defaultValue;
+            }
+
         }
         else
         {
@@ -71,8 +83,10 @@ public static class ObjectSerialiser
     //We'll add encryption later.
     static void SerialiseItemsToSave()
     {
-        string jsonString = JsonConvert.SerializeObject(_itemsToSave, Formatting.Indented); //pretty print please.
-        
+        //Json utility doesn't serialise the dictionary, JsonConvert does. however, it has the casting problem to solve.
+        //If we added a custom dictionary type that can then be serialised, it might be possible to use Json Utility and not have a problem.
+        //string jsonString = JsonUtility.ToJson(_itemsToSave, true); //pretty print please.
+        string jsonString = JsonConvert.SerializeObject(_itemsToSave, Formatting.Indented);
         if (System.IO.File.Exists(_filePath))
         {
             if (System.IO.File.Exists(_filePathBackup))
@@ -107,6 +121,7 @@ public static class ObjectSerialiser
             return;
         }
 
+        //_itemsToSave = JsonUtility.FromJson<Dictionary<string, Tuple<Type, object>>>(jsonString);
         _itemsToSave = JsonConvert.DeserializeObject<Dictionary<string, Tuple<Type, object>>>(jsonString);
         foreach (KeyValuePair<string, Tuple<Type, object>> kvp in _itemsToSave)
         {
