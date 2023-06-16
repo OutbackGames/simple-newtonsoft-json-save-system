@@ -18,8 +18,8 @@ using Newtonsoft.Json;
 public static class ObjectSerialiser
 {
     //Environment.UserName returns "SYSTEM" on windows in some cases. be aware.
-    private static string _filePath = $@"C:\Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat";
-    private static string _filePathBackup = $@"C:\Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat.bak";
+    private static string _filePath = $@"{Path.GetPathRoot(Environment.SystemDirectory)}Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat";
+    private static string _filePathBackup = $@"{Path.GetPathRoot(Environment.SystemDirectory)}Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat.bak";
     private static Dictionary<string, Tuple<Type, object>> _itemsToSave = new Dictionary<string, Tuple<Type, object>>();
     private static bool _hasInitialised = false;
     
