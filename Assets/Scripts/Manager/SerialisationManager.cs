@@ -60,11 +60,9 @@ public class SerialisationManager : MonoBehaviour
         //floats are being serialised as doubles.
         //all of this was not an issue when serialising with XML. - nice to know.
         //Finally, figure out why the data in the struct isn't serialising, even though the fields are exposed for serialisation.
-        
-        Int64 storedlevelNumber = Convert.ToInt64(ObjectSerialiser.Load(levelKey, _level));
-        _level = (int)storedlevelNumber;
-        double storedWeight = (double)ObjectSerialiser.Load(weightKey, _weight);
-        _weight = (float)storedWeight;
+
+        _level = ObjectSerialiser.Load(levelKey, _level);
+        _weight = ObjectSerialiser.Load(weightKey, _weight);
         
         //_simpleData = Convert.ChangeType(ObjectSerialiser.Load(simpleDataKey, _simpleData), );
     }

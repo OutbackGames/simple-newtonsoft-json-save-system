@@ -7,6 +7,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using UnityEngine;
@@ -19,7 +20,7 @@ public static class ObjectSerialiser
     //Environment.UserName returns "SYSTEM" on windows in some cases. be aware.
     private static string _filePath = $@"C:\Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat";
     private static string _filePathBackup = $@"C:\Users\{Environment.UserName}\AppData\LocalLow\Outback Games\Save.dat.bak";
-    private static Dictionary<string, object> _itemsToSave = new Dictionary<string, object>();
+    private static Dictionary<string, Tuple<Type, object>> _itemsToSave = new Dictionary<string, Tuple<Type, object>>();
     private static bool _hasInitialised = false;
     
     public static void Initialise()
@@ -32,13 +33,15 @@ public static class ObjectSerialiser
     
     public static void Save<T>(string Key, T Value)
     {
+        Tuple<Type, object> tupleToStore = new Tuple<Type, object>(Value.GetType(), Value);
+        
         if (_itemsToSave.ContainsKey(Key))
         {
-            _itemsToSave[Key] = (object)Value;
+            _itemsToSave[Key] = tupleToStore;
         }
         else
         {
-            _itemsToSave.Add(Key, (object)Value);
+            _itemsToSave.Add(Key, tupleToStore);
         }
         SerialiseItemsToSave(); //for later, batch this call for the next improvement cycle instead of serialising every time we want to add to the dictionary.
     }
@@ -50,11 +53,19 @@ public static class ObjectSerialiser
     /// <param name="Key">Key of the object.</param>
     /// <param name="defaultValue">The Default Value and Type Expected.</param>
     /// <typeparam name="T">The Type You Expect.</typeparam>
-    public static object Load<T>(string Key, T defaultValue)
+    public static T Load<T>(string Key, T defaultValue)
     {
-        object itemToReturn;
-        _itemsToSave.TryGetValue(Key, out itemToReturn);
-        return itemToReturn ?? defaultValue;
+        Tuple<Type, object> returnedTuple;
+        _itemsToSave.TryGetValue(Key, out returnedTuple);
+        if (returnedTuple != null)
+        {
+            return (T) Convert.ChangeType(returnedTuple.Item2, returnedTuple.Item1, CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            return defaultValue;
+        }
+        
     }
 
     //We'll add encryption later.
@@ -96,10 +107,10 @@ public static class ObjectSerialiser
             return;
         }
 
-        _itemsToSave = JsonConvert.DeserializeObject<Dictionary<string, object>>(jsonString);
-        foreach (KeyValuePair<string, object> kvp in _itemsToSave)
+        _itemsToSave = JsonConvert.DeserializeObject<Dictionary<string, Tuple<Type, object>>>(jsonString);
+        foreach (KeyValuePair<string, Tuple<Type, object>> kvp in _itemsToSave)
         {
-            Debug.Log($"Key: {kvp.Key}, Value: {kvp.Value}, ValueType: {kvp.Value.GetType().ToString()}");
+            Debug.Log($"Key: {kvp.Key}, Type:{kvp.Value.Item1}, Value: {kvp.Value.Item2}");
         }
     }
     
